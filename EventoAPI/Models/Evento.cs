@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace EventoAPI.Models
 {
@@ -19,7 +21,12 @@ namespace EventoAPI.Models
         [StringLength(100, MinimumLength = 5, ErrorMessage = "El lugar debe tener entre 5 y 100 caracteres")]
         public string Lugar { get; set; }
 
-        public ICollection<Participante> Participantes { get; set; }
-        public ICollection<Organizador> Organizadores { get; set; }
+        [NotMapped]
+        [JsonIgnore]
+        public ICollection<Participante>? Participantes { get; set; }
+
+        [NotMapped]
+        [JsonIgnore]
+        public ICollection<Organizador>? Organizadores { get; set; }
     }
 }

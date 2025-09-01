@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace EventoAPI.Models
 {
@@ -20,6 +21,7 @@ namespace EventoAPI.Models
         [ForeignKey("Evento")]
         public int EventoId { get; set; }
 
-        public Evento Evento { get; set; }
+        [JsonIgnore]
+        public Evento? Evento { get; set; }
     }
 }
