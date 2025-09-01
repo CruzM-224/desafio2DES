@@ -1,0 +1,93 @@
+{
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:5025"
+    
+
+  },
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/eventos",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5037
+        }
+      ],
+      "UpstreamPathTemplate": "/eventos",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "SwaggerKey": "eventos-service",
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1m",
+        "PeriodTimespan": 60,
+        "Limit": 10
+      },
+      "FileCacheOptions": {
+        "TtlSeconds": 20,
+        "Region": "eventosCache"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/participantes",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5037
+        }
+      ],
+      "UpstreamPathTemplate": "/participantes",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "SwaggerKey": "eventos-service",
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1m",
+        "PeriodTimespan": 60,
+        "Limit": 10
+      },
+      "FileCacheOptions": {
+        "TtlSeconds": 20,
+        "Region": "participantes"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/organizadores",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5037
+        }
+      ],
+      "UpstreamPathTemplate": "/organizadores",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "SwaggerKey": "eventos-service",
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1m",
+        "PeriodTimespan": 60,
+        "Limit": 10
+      },
+      "FileCacheOptions": {
+        "TtlSeconds": 20,
+        "Region": "organizadoresCache"
+      }
+    }
+  ],
+  "SwaggerEndPoints": [
+    {
+      "Key": "eventos-service",
+      "Config": [
+        {
+          "Name": "Eventos API",
+          "Version": "v1",
+          "Url": "http://localhost:5037/swagger/v1/swagger.json"
+        }
+      ]
+    }
+  ]
+}

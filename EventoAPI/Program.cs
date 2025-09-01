@@ -1,41 +1,26 @@
-
 using EventoAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventoAPI
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+// Configurar DbContext con SQL Server
+builder.Services.AddDbContext<EventosDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EventosCN")));
 
-            // Add DbContext
-            builder.Services.AddDbContext<EventosDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("EventosCN")));
+// Agregar controladores
+builder.Services.AddControllers();
 
-            builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
+// Registrar Swagger para que el Gateway pueda usarlo
+builder.Services.AddSwaggerGen();
 
-            var app = builder.Build();
+var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapOpenApi();
-            }
+app.UseSwagger();
 
-            app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+app.UseAuthorization();
 
+app.MapControllers();
 
-            app.MapControllers();
-
-            app.Run();
-        }
-    }
-}
+app.Run();
