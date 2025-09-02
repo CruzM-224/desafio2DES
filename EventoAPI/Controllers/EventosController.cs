@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EventoAPI.Models;
+using StackExchange.Redis;
+using System.Text.Json;
 
 namespace EventoAPI.Controllers
 {
@@ -14,30 +16,47 @@ namespace EventoAPI.Controllers
     public class EventosController : ControllerBase
     {
         private readonly EventosDbContext _context;
+        private readonly IConnectionMultiplexer _redis;
 
-        public EventosController(EventosDbContext context)
+        public EventosController(EventosDbContext context, IConnectionMultiplexer redis)
         {
             _context = context;
+            _redis = redis;
         }
 
         // GET: api/Eventos
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Evento>>> GetEventos()
         {
-            return await _context.Eventos.ToListAsync();
+            var redisDB = _redis.GetDatabase();
+            string cacheKey = "eventoList";
+            var eventosCache = await redisDB.StringGetAsync(cacheKey);
+            if (!eventosCache.IsNullOrEmpty)
+            {
+                return JsonSerializer.Deserialize<List<Evento>>(eventosCache);
+            }
+            var eventos = await _context.Eventos.ToListAsync();
+            await redisDB.StringSetAsync(cacheKey, JsonSerializer.Serialize(eventos), TimeSpan.FromMinutes(10));
+            return eventos;
         }
 
         // GET: api/Eventos/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Evento>> GetEvento(int id)
         {
+            var redisDB = _redis.GetDatabase();
+            string cacheKey = "evento_" + id.ToString();
+            var eventosCache = await redisDB.StringGetAsync(cacheKey);
+            if (!eventosCache.IsNullOrEmpty)
+            {
+                return JsonSerializer.Deserialize<Evento>(eventosCache);
+            }
             var evento = await _context.Eventos.FindAsync(id);
-
-            if (evento == null)
+            if(evento == null)
             {
                 return NotFound();
             }
-
+            await redisDB.StringSetAsync(cacheKey, JsonSerializer.Serialize(evento), TimeSpan.FromMinutes(10));
             return evento;
         }
 
@@ -56,6 +75,11 @@ namespace EventoAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                var redisDB = _redis.GetDatabase();
+                string cacheKeyList = "eventoList";
+                string cacheKey = "evento_" + id.ToString();
+                await redisDB.KeyDeleteAsync(cacheKeyList);
+                await redisDB.KeyDeleteAsync(cacheKey);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -79,6 +103,9 @@ namespace EventoAPI.Controllers
         {
             _context.Eventos.Add(evento);
             await _context.SaveChangesAsync();
+            var redisDB = _redis.GetDatabase();
+            string cacheKeyList = "eventoList";
+            await redisDB.KeyDeleteAsync(cacheKeyList);
 
             return CreatedAtAction("GetEvento", new { id = evento.Id }, evento);
         }
@@ -95,6 +122,11 @@ namespace EventoAPI.Controllers
 
             _context.Eventos.Remove(evento);
             await _context.SaveChangesAsync();
+            var redisDB = _redis.GetDatabase();
+            string cacheKeyList = "eventoList";
+            string cacheKey = "evento_" + id.ToString();
+            await redisDB.KeyDeleteAsync(cacheKeyList);
+            await redisDB.KeyDeleteAsync(cacheKey);
 
             return NoContent();
         }

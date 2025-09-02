@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using EventoAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using EventoAPI.Models;
+using StackExchange.Redis;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace EventoAPI.Controllers
 {
@@ -14,30 +16,48 @@ namespace EventoAPI.Controllers
     public class OrganizadoresController : ControllerBase
     {
         private readonly EventosDbContext _context;
+        private readonly IConnectionMultiplexer _redis;
 
-        public OrganizadoresController(EventosDbContext context)
+
+        public OrganizadoresController(EventosDbContext context, IConnectionMultiplexer redis)
         {
             _context = context;
+            _redis = redis;
         }
 
         // GET: api/Organizadores
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Organizador>>> GetOrganizadores()
         {
-            return await _context.Organizadores.ToListAsync();
+            var redisDB = _redis.GetDatabase();
+            string cacheKey = "organizadorList";
+            var organizadorCache = await redisDB.StringGetAsync(cacheKey);
+            if (!organizadorCache.IsNullOrEmpty)
+            {
+                return JsonSerializer.Deserialize<List<Organizador>>(organizadorCache);
+            }
+            var organizadores = await _context.Organizadores.ToListAsync();
+            await redisDB.StringSetAsync(cacheKey, JsonSerializer.Serialize(organizadores), TimeSpan.FromMinutes(10));
+            return organizadores;
         }
 
         // GET: api/Organizadores/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Organizador>> GetOrganizador(int id)
         {
+            var redisDB = _redis.GetDatabase();
+            string cacheKey = "organizador_" + id.ToString();
+            var organizadoresCache = await redisDB.StringGetAsync(cacheKey);
+            if (!organizadoresCache.IsNullOrEmpty)
+            {
+                return JsonSerializer.Deserialize<Organizador>(organizadoresCache);
+            }
             var organizador = await _context.Organizadores.FindAsync(id);
-
             if (organizador == null)
             {
                 return NotFound();
             }
-
+            await redisDB.StringSetAsync(cacheKey, JsonSerializer.Serialize(organizador), TimeSpan.FromMinutes(10));
             return organizador;
         }
 
@@ -56,6 +76,11 @@ namespace EventoAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                var redisDB = _redis.GetDatabase();
+                string cacheKeyList = "organizadorList";
+                string cacheKey = "organizador_" + id.ToString();
+                await redisDB.KeyDeleteAsync(cacheKeyList);
+                await redisDB.KeyDeleteAsync(cacheKey);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -79,6 +104,9 @@ namespace EventoAPI.Controllers
         {
             _context.Organizadores.Add(organizador);
             await _context.SaveChangesAsync();
+            var redisDB = _redis.GetDatabase();
+            string cacheKeyList = "organizadorList";
+            await redisDB.KeyDeleteAsync(cacheKeyList);
 
             return CreatedAtAction("GetOrganizador", new { id = organizador.Id }, organizador);
         }
@@ -95,6 +123,11 @@ namespace EventoAPI.Controllers
 
             _context.Organizadores.Remove(organizador);
             await _context.SaveChangesAsync();
+            var redisDB = _redis.GetDatabase();
+            string cacheKeyList = "organizadorList";
+            string cacheKey = "organizador_" + id.ToString();
+            await redisDB.KeyDeleteAsync(cacheKeyList);
+            await redisDB.KeyDeleteAsync(cacheKey);
 
             return NoContent();
         }
