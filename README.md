@@ -1,4 +1,4 @@
-# Desafío 2 Desarrollo de Software Empresarail
+# Desafío 2 Desarrollo de Software Empresarial
 
 ## Integrantes
 - José Roberto Doradea Herrera  
@@ -12,13 +12,14 @@ Este proyecto implementa un sistema para la **gestión de eventos, participantes
 
 La solución incluye:
 - **API REST** con operaciones CRUD para eventos, participantes y organizadores.  
-- **Validaciones** de datos en cada entidad (longitudes mínimas y máximas, formato de email, fechas válidas, etc.).  
+- **Validaciones** de datos en cada entidad.
 - **API Gateway con Ocelot** para centralizar el acceso a los servicios.  
 - **Swagger** habilitado en la API y en el Gateway para documentar los endpoints.  
 - **Rate limiting** configurado (10 peticiones por minuto por endpoint).  
 - **Caché** en el Gateway (20 segundos por endpoint).  
-- **Orquestación con Docker Compose** para levantar API, Gateway, SQL Server y Redis (opcional para caching en la API).  
+- **Orquestación con Docker Compose** para levantar API, Gateway, SQL Server y Redis.  
 
 ---
+
 
 
