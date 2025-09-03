@@ -1,0 +1,69 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong!Passw0rd
+      - MSSQL_PID=Express
+    ports:
+      - "11433:1433"        # host:container — evita choque con tu SQL local
+    volumes:
+      - mssql_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/1433' || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  eventoapi:
+    build:
+      context: .
+      dockerfile: EventoAPI/Dockerfile
+    container_name: eventoapi
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker   # para que cargue appsettings.Docker.json
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "5000:8080"         # Swagger API: http://localhost:5000/swagger
+
+  apigateway:
+    build:
+      context: .
+      dockerfile: APIGateway/Dockerfile
+    container_name: apigateway
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - eventoapi
+    ports:
+      - "8080:8080"         # Gateway: http://localhost:8080/swagger
+    volumes:
+      - ./APIGateway/ocelot.Docker.json:/app/ocelot.json:ro
+
+volumes:
+  mssql_data:
+  redis_data:
+

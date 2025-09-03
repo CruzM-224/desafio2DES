@@ -1,14 +1,14 @@
 {
-  "GlobalConfiguration": { "BaseUrl": "http://localhost:5025" },
+  "GlobalConfiguration": { "BaseUrl": "http://apigateway:8080" },
   "Routes": [
     /* EVENTOS */
     {
-      "DownstreamPathTemplate": "/api/eventos",
+      "DownstreamPathTemplate": "/api/Eventos",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5037
+          "Host": "eventoapi",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/eventos",
@@ -26,12 +26,12 @@
       }
     },
     {
-      "DownstreamPathTemplate": "/api/eventos/{id}",
+      "DownstreamPathTemplate": "/api/Eventos/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5037
+          "Host": "eventoapi",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/eventos/{id}",
@@ -51,12 +51,12 @@
 
     /* PARTICIPANTES */
     {
-      "DownstreamPathTemplate": "/api/participantes",
+      "DownstreamPathTemplate": "/api/Participantes",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5037
+          "Host": "eventoapi",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/participantes",
@@ -74,12 +74,12 @@
       }
     },
     {
-      "DownstreamPathTemplate": "/api/participantes/{id}",
+      "DownstreamPathTemplate": "/api/Participantes/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5037
+          "Host": "eventoapi",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/participantes/{id}",
@@ -99,12 +99,12 @@
 
     /* ORGANIZADORES */
     {
-      "DownstreamPathTemplate": "/api/organizadores",
+      "DownstreamPathTemplate": "/api/Organizadores",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5037
+          "Host": "eventoapi",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/organizadores",
@@ -122,12 +122,12 @@
       }
     },
     {
-      "DownstreamPathTemplate": "/api/organizadores/{id}",
+      "DownstreamPathTemplate": "/api/Organizadores/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5037
+          "Host": "eventoapi",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/organizadores/{id}",
@@ -150,9 +150,9 @@
       "Key": "eventos-service",
       "Config": [
         {
-          "Name": "Eventos API",
+          "Name": "Evento API",
           "Version": "v1",
-          "Url": "http://localhost:5037/swagger/v1/swagger.json"
+          "Url": "http://eventoapi:8080/swagger/v1/swagger.json"
         }
       ]
     }
